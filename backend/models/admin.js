@@ -1,18 +1,19 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 
-// Define user schema
-const userSchema = new mongoose.Schema({
+const adminSchema = new mongoose.Schema({
     name: String, 
     registrationNumber: String,
     email: String,
+    password: String,
+    adminType: String,
+    position: String,
     course: String,
     branch: String,
     year:String,
-    events: []
-  });
-  
-  userSchema.statics.findAndValidate = async function ({ email, password }) {
+});
+
+adminSchema.statics.findAndValidate = async function ({ email, password }) {
     const foundUser = await this.findOne({ email });
     console.log('validate route')
     if (!foundUser) {
@@ -23,16 +24,15 @@ const userSchema = new mongoose.Schema({
       throw new Error("Invalid password");
     }
     return foundUser;
-  };
-  
+};
 
-userSchema.pre('save', async function (next) {
+adminSchema.pre('save', async function (next) {
+    console.log('pre.save');
     if (!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password, 12);
     next();
-})
+});
 
-  // Define user model
-  const User = mongoose.model('User', userSchema);
-  
- module.exports = User;
+
+const Admin = mongoose.model('Admin', adminSchema);
+module.exports = Admin;

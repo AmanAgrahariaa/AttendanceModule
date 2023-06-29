@@ -1,57 +1,58 @@
+
+
+
+
+
+
 import React, { useState } from 'react';
 import { Navbar, Nav, NavDropdown, Button, Container } from 'react-bootstrap';
+import { Routes, Route, Link } from 'react-router-dom';
 import AddStudent from './MemberList';
 import AddAdmin from './AdminList';
 import Admin1_home from './Admin1_home';
 import CurrentList from './CurrentEvent';
 import PastList from './PastEvent';
 
+
 const Navigation = () => {
   const [activeTab, setActiveTab] = useState('admin1Home');
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'addStudent':
-        return <AddStudent />;
-      case 'addAdmin':
-        return <AddAdmin />;
-      case 'admin1Home':
-        return <Admin1_home />;
-      case 'CurrentEvent':
-        return <CurrentList />;
-      case 'PastEvent':
-        return <PastList />;
-      default:
-        return null;
-    }
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
   };
 
   return (
     <>
       <Navbar bg="light" expand="lg" style={{ padding: '2px' }}>
         <Container>
-          <Navbar.Brand href="/">
-            <img alt="logo" src="logo_new.png" style={{ maxHeight: '70px' }} />
+          <Navbar.Brand>
+            <img alt="logo" src="nss_nav.png" style={{ maxHeight: '70px' }} />
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
             <Nav>
               <Nav.Link
-                onClick={() => setActiveTab('admin1Home')}
+                as={Link}
+                to="/home"
+                onClick={() => handleTabChange('admin1Home')}
                 className={activeTab === 'admin1Home' ? 'active' : ''}
               >
                 Home
               </Nav.Link>
 
               <Nav.Link
-                onClick={() => setActiveTab('addStudent')}
+                as={Link}
+                to="/Student"
+                onClick={() => handleTabChange('addStudent')}
                 className={activeTab === 'addStudent' ? 'active' : ''}
               >
                 Member
               </Nav.Link>
 
               <Nav.Link
-                onClick={() => setActiveTab('addAdmin')}
+                as={Link}
+                to="/Admin"
+                onClick={() => handleTabChange('addAdmin')}
                 className={activeTab === 'addAdmin' ? 'active' : ''}
               >
                 Admin
@@ -60,14 +61,22 @@ const Navigation = () => {
               <NavDropdown
                 title="Event"
                 id="basic-nav-dropdown"
-                onSelect={(eventKey) => setActiveTab(eventKey)}
-                className={activeTab === 'CurrentEvent' || activeTab === 'PastEvent' ? 'active' : ''}
+                onSelect={(eventKey) => handleTabChange(eventKey)}
+                className={
+                  activeTab === 'CurrentEvent' || activeTab === 'PastEvent' ? 'active' : ''
+                }
               >
-                <NavDropdown.Item eventKey="CurrentEvent">Current Event</NavDropdown.Item>
-                <NavDropdown.Item eventKey="PastEvent">Past Event</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/currentEvent">
+                  Current Event
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/pastEvent">
+                  Past Event
+                </NavDropdown.Item>
               </NavDropdown>
 
-              <Button variant="outline-dark" className="ml-2">Logout</Button>
+              <Button variant="outline-dark" className="ml-2">
+                Logout
+              </Button>
               {/* <span className="account-symbol">John Doe</span> */}
             </Nav>
           </Navbar.Collapse>
@@ -75,14 +84,16 @@ const Navigation = () => {
       </Navbar>
 
       <div className="container mt-4">
-        {renderContent()}
+        <Routes>
+          <Route path="/home" element={<Admin1_home />} />
+          <Route path="/Student" element={<AddStudent />} />
+          <Route path="/Admin" element={<AddAdmin />} />
+          <Route path="/currentEvent" element={<CurrentList />} />
+          <Route path="/pastEvent" element={<PastList />} />
+        </Routes>
       </div>
     </>
   );
 };
 
 export default Navigation;
-
-
-
-

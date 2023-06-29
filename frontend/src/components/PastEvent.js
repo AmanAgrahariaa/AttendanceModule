@@ -1,12 +1,87 @@
-
-import React from "react";
+import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import ModalPart from './ModalPart';
 import { Button, Modal } from 'react-bootstrap';
 import { PencilFill, TrashFill } from 'react-bootstrap-icons';
+import Navbar from './Admin1_Header'
+
 
 const AdminHeader = () => {
+    const [AttendanceData, setAttendanceData] = useState(null);
     const [showModal, setShowModal] = React.useState(false);
+
+    const [entriesToShow, setEntriesToShow] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
+
+
+    useEffect(() => {
+      fetchData();
+    }, []);
+  
+ 
+
+    const fetchData = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/api/pastEvent');
+          const responseData = await response.json();
+          setAttendanceData(responseData);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+      
+  
+    // if (!AttendanceData) {
+    //   return <div>Loading...</div>;
+    // }
+
+
+
+
+    if (AttendanceData === null) {
+        return <div>Loading...</div>;
+    }
+
+    const handleEntriesToShowChange = (event) => {
+        setEntriesToShow(Number(event.target.value));
+        setCurrentPage(1);
+    };
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+
+    const entriesPerPage = entriesToShow;
+    const dataLength = AttendanceData ? AttendanceData.length : 0;
+    const totalPages = Math.ceil(dataLength / entriesToShow);
+    const indexOfLastEntry = currentPage * entriesToShow;
+    const indexOfFirstEntry = indexOfLastEntry - entriesToShow;
+    const displayedEntries = AttendanceData.slice(indexOfFirstEntry, indexOfLastEntry);
+
+  
+    const pageLinks = [];
+    for (let page = 1; page <= totalPages; page++) {
+        pageLinks.push(
+            <li
+                className={`page-item ${currentPage === page ? "active" : ""}`}
+                aria-current="page"
+                key={page}
+            >
+                <a className="page-link" href="#" onClick={() => setCurrentPage(page)}>
+                    {page}
+                </a>
+            </li>
+        );
+    }
 
     const handleModalToggle = () => {
         setShowModal(!showModal);
@@ -18,7 +93,8 @@ const AdminHeader = () => {
     };
 
     return (
-
+<>
+        {/* <Navbar/> */}
         <div className="d-flex align-items-start justify-content-center" style={{ minHeight: "100vh" }}>
             <div className="container">
                 <div className="row mb-4">
@@ -48,21 +124,24 @@ const AdminHeader = () => {
 
 
 
-                            <div className="d-flex align-items-center">
+                        <div className="d-flex align-items-center">
                                 <label className="mb-0 mr-2">Show</label>
                                 <select
                                     name="dtBasicExample_length"
                                     aria-controls="dtBasicExample"
                                     className="custom-select custom-select-sm form-control form-control-sm"
                                     style={{ width: "auto" }}
+                                    value={entriesToShow}
+                                    onChange={handleEntriesToShowChange}
                                 >
+                                    <option value="3">3</option>
+                                    <option value="5">5</option>
                                     <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
+                                    <option value="15">15</option>
                                 </select>
                                 <label className="mb-0 ml-2">entries</label>
                             </div>
+
                         </div>
                     </div>
 
@@ -100,11 +179,24 @@ const AdminHeader = () => {
                         </thead>
                         <tbody id="tbody">
 
+                        {displayedEntries.map((student, index) => (
+                                <tr key={index}>
+                                    <td>{indexOfFirstEntry + index + 1}</td>
+                                    <td>{student.eventName}</td>
+                                    <td>{student.startDate}</td>
+                                    <td>{student.endDate}</td>
+                                    <td>
+                                        <TrashFill size={24} style={{ color: 'red' }} />
+                                    </td>
+                                    <td>
+                                        <PencilFill size={24} style={{ color: 'blue' }} />
+                                    </td>
+                                </tr>
+                            ))}
 
 
 
-
-                            <tr>
+                            {/* <tr>
                                 <td>2</td>
                                 <td>Jane Smith</td>
                                 <td>2021002</td>
@@ -184,51 +276,46 @@ const AdminHeader = () => {
                                 <td>
                                     <PencilFill size={24} style={{ color: 'blue' }} />
                                 </td>
-                            </tr>
+                            </tr> */}
 
                             {/* Table rows */}
                         </tbody>
                     </table>
 
                     <div className="panel-footer">
-                        <div className="row">
-                            <div className="col-sm-6 col-xs-6">
-                                Showing <b>5</b> out of <b>25</b> entries
-                            </div>
-                            <div className="col-sm-6 col-xs-6">
-                                <ul className="pagination hidden-xs pull-right">
-                                    <li className="page-item disabled">
-                                        <a className="page-link" href="#" tabIndex="-1" aria-disabled="true">
-                                            Previous
-                                        </a>
-                                    </li>
-                                    <li className="page-item active" aria-current="page">
-                                        <a className="page-link" href="#">
-                                            1 <span className="sr-only">(current)</span>
-                                        </a>
-                                    </li>
-                                    <li className="page-item">
-                                        <a className="page-link" href="#">
-                                            2
-                                        </a>
-                                    </li>
-                                    <li className="page-item">
-                                        <a className="page-link" href="#">
-                                            3
-                                        </a>
-                                    </li>
-                                    <li className="page-item">
-                                        <a className="page-link" href="#">
-                                            Next
-                                        </a>
-                                    </li>
-                                </ul>
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-12 d-flex justify-content-between align-items-center">
+                                    <div className="mb-2">
+                                        Showing <b>{displayedEntries.length}</b> out of <b>{AttendanceData.length}</b> entries
+                                    </div>
+                                    <ul className="pagination">
+                                        <li className="page-item" onClick={handlePreviousPage}>
+                                            <a className="page-link" href="#">
+                                                Previous
+                                            </a>
+                                        </li>
+                                        {pageLinks}
+                                        <li className="page-item" onClick={handleNextPage}>
+                                            <a className="page-link" href="#">
+                                                Next
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+
+
+
+
+
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

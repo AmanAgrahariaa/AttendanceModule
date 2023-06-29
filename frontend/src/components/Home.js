@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { HiUser, HiLockClosed } from 'react-icons/hi';
+import Admin1_home from './Admin1_home'
 import Admin1_Header from './Admin1_Header'
 
 const Login = () => {
@@ -49,7 +50,9 @@ const Login = () => {
   };
 
   if (isLoggedIn) {
-    return <Admin1_Header />;
+    return ( 
+    <Admin1_Header/>
+    )
   }
 
   return (
