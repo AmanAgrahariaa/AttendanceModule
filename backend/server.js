@@ -112,18 +112,18 @@ app.post('/login', async(req, res) => {
 
 
 
-// app.post('/addEvent', async(req, res) => {
-//   const {name, startDate, endDate} = req.body;
-//   let eventName = name;
-//   try{
-//     let event = new Event({eventName, startDate, endDate});
-//     await event.save();
-//     res.json({success: true, message: 'Event created successfully'});
-//   }
-//   catch(error) {
-//     res.json({success: false, message: 'Error occurred'});
-//   }
-// });
+app.post('/api/addEvent', async(req, res) => {
+  const {name, startDate, endDate} = req.body;
+  let eventName = name;
+  try{
+    let event = new Event({eventName, startDate, endDate});
+    await event.save();
+    res.json({success: true, message: 'Event created successfully'});
+  }
+  catch(error) {
+    res.json({success: false, message: 'Error occurred'});
+  }
+});
 
 
 
@@ -137,6 +137,7 @@ app.post('/login', async(req, res) => {
 
 
 app.get('/api/home', async(req, res) => {
+  
   const userData = await User.find();
   if(userData) {
     console.log("data is ", userData);
@@ -174,7 +175,7 @@ app.get('/api/Admin', async(req, res) => {
 })
 
 
-app.get('/api/currentEvent', async(req, res) => {
+app.get('/api/Event', async(req, res) => {
   const eventData = await Event.find();
   if(eventData) {
     res.json(eventData);
@@ -185,15 +186,7 @@ app.get('/api/currentEvent', async(req, res) => {
 })
 
 
-app.get('/api/pastEvent', async(req, res) => {
-  const eventData = await Event.find();
-  if(eventData) {
-    res.json(eventData);
-  }
-  else{
-    res.json([]);
-  }
-})
+
 
 
 
@@ -230,21 +223,6 @@ app.post('/api/add-Admin', async (req, res) => {
   }
 });
 
-
-
-
-app.post('/api/Student/search', async (req, res) => {
-  console.log('Enters in /Student/search Route');
-  const searchQuery = req.body;
-  console.log(req.body);
-  try{
-    let searchData=null;
-    res.json(searchData);
-  }
-  catch(error) {
-    res.json({success: false, message: 'Error occured'});
-  }
-});
 
 
 

@@ -5,106 +5,16 @@ import { PencilFill, TrashFill } from 'react-bootstrap-icons';
 import Navbar from './Admin1_Header'
 
 const AdminHeader = () => {
-
-    // const AttendanceData = [
-    //     {
-    //         id: 1,
-    //         name: 'John Doe',
-    //         rollNumber: 2021001,
-    //         major: 'Computer Science',
-    //         status: 'Present',
-    //         graduationYear: 2022,
-    //         position: 'President',
-    //     },
-    //     {
-    //         id: 2,
-    //         name: 'Jane Smith',
-    //         rollNumber: 2021002,
-    //         major: 'Electrical Engineering',
-    //         status: 'Absent',
-    //         graduationYear: 2022,
-    //         position: 'Vice President',
-    //     },
-    //     {
-    //         id: 3,
-    //         name: 'Michael Brown',
-    //         rollNumber: 2021015,
-    //         major: 'Mechanical Engineering',
-    //         status: 'Present',
-    //         graduationYear: 2022,
-    //         position: 'Member',
-    //     },
-    //     {
-    //         id: 4,
-    //         name: 'Jane Smith',
-    //         rollNumber: 2021002,
-    //         major: 'Electrical Engineering',
-    //         status: 'Absent',
-    //         graduationYear: 2022,
-    //         position: 'Vice President',
-    //     },
-    //     {
-    //         id: 5,
-    //         name: 'Steve Smith',
-    //         rollNumber: 2021003,
-    //         major: 'Computer Science Engineering',
-    //         status: 'Present',
-    //         graduationYear: 2022,
-    //         position: 'President',
-    //     },
-    //     {
-    //         id: 6,
-    //         name: 'Tommy',
-    //         rollNumber: 2021003,
-    //         major: 'MCA',
-    //         status: 'Present',
-    //         graduationYear: 2022,
-    //         position: 'Vice President',
-    //     },
-    //     {
-    //         id: 7,
-    //         name: 'Jane Smith',
-    //         rollNumber: 2021002,
-    //         major: 'Electrical Engineering',
-    //         status: 'Absent',
-    //         graduationYear: 2022,
-    //         position: 'Vice President',
-    //     },
-    //     {
-    //         id: 8,
-    //         name: 'Jane Smith',
-    //         rollNumber: 2021002,
-    //         major: 'Electrical Engineering',
-    //         status: 'Absent',
-    //         graduationYear: 2022,
-    //         position: 'Vice President',
-    //     },
-    //     {
-    //         id: 9,
-    //         name: 'John Doe', // Updated name
-    //         rollNumber: 2021002,
-    //         major: 'Electronics Engineering', // Updated major
-    //         status: 'Absent',
-    //         graduationYear: 2022,
-    //         position: 'Vice President',
-    //     },
-    //     {
-    //         id: 10,
-    //         name: 'Steve Johnson', // Updated name
-    //         rollNumber: 2021003,
-    //         major: 'Mechanical Engineering', // Updated major
-    //         status: 'Present',
-    //         graduationYear: 2022,
-    //         position: 'President',
-    //     }
-    // ];
-
     const [AttendanceData, setAttendanceData] = useState(null);
     const [showModal, setShowModal] = React.useState(false);
 
     const [entriesToShow, setEntriesToShow] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
 
+    const [search, setSearch] = useState('');
+    const setSearchQuery = (e)=>{
+        setSearch(e.target.value);
+    }
 
     useEffect(() => {
       fetchData();
@@ -122,14 +32,6 @@ const AdminHeader = () => {
         }
       };
       
-  
-    // if (!AttendanceData) {
-    //   return <div>Loading...</div>;
-    // }
-
-
-
-
     if (AttendanceData === null) {
         return <div>Loading...</div>;
     }
@@ -151,7 +53,7 @@ const AdminHeader = () => {
         }
     };
 
-
+    
     const entriesPerPage = entriesToShow;
     const dataLength = AttendanceData ? AttendanceData.length : 0;
     const totalPages = Math.ceil(dataLength / entriesToShow);
@@ -159,7 +61,6 @@ const AdminHeader = () => {
     const indexOfFirstEntry = indexOfLastEntry - entriesToShow;
     const displayedEntries = AttendanceData.slice(indexOfFirstEntry, indexOfLastEntry);
 
-  
     const pageLinks = [];
     for (let page = 1; page <= totalPages; page++) {
         pageLinks.push(
@@ -180,12 +81,12 @@ const AdminHeader = () => {
         setShowModal(!showModal);
     };
 
+
     return (
 <>
 {/* <Navbar/> */}
         <div className="d-flex align-items-start justify-content-center" style={{ minHeight: "100vh" }}>
             <div className="container">
-
 
                 <div className="row mb-4">
                     <div className="col-sm-6 d-flex align-items-center">
@@ -276,12 +177,13 @@ const AdminHeader = () => {
                     </div>
 
                     <div className="col-sm-6 d-flex align-items-center justify-content-end">
-                        <form className="form-inline">
+                        <form className="form-inline" onSubmit={setSearchQuery}>
                             <div className="input-group">
                                 <input
                                     type="text"
                                     className="form-control"
                                     placeholder="Search..."
+                                    onChange={setSearchQuery}
                                     aria-label="Search"
                                     style={{ width: "200px" }}
                                 />

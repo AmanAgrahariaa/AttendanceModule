@@ -1,17 +1,13 @@
-
-
-
-
-
-
 import React, { useState } from 'react';
 import { Navbar, Nav, NavDropdown, Button, Container } from 'react-bootstrap';
 import { Routes, Route, Link } from 'react-router-dom';
 import AddStudent from './MemberList';
 import AddAdmin from './AdminList';
+// import Events_home from './Events_home';
 import Admin1_home from './Admin1_home';
 import CurrentList from './CurrentEvent';
 import PastList from './PastEvent';
+import Events_home from './Events_home';
 
 
 const Navigation = () => {
@@ -33,7 +29,7 @@ const Navigation = () => {
             <Nav>
               <Nav.Link
                 as={Link}
-                to="/home"
+                to="/home_event"
                 onClick={() => handleTabChange('admin1Home')}
                 className={activeTab === 'admin1Home' ? 'active' : ''}
               >
@@ -85,7 +81,9 @@ const Navigation = () => {
 
       <div className="container mt-4">
         <Routes>
-          <Route path="/home" element={<Admin1_home />} />
+          {/* <Route path="/home" element={<Admin1_home />} /> */}
+
+          <Route path = "/home_event" element={<Events_home/>}/>
           <Route path="/Student" element={<AddStudent />} />
           <Route path="/Admin" element={<AddAdmin />} />
           <Route path="/currentEvent" element={<CurrentList />} />
