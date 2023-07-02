@@ -10,11 +10,9 @@
 
 
 const mongoose = require('mongoose');
-// require('dotenv').config();
+require('dotenv').config();
 
-const MONGODB_URI ='mongodb+srv://AmanAgrahari_aa:agbOl6dVejIL0bZs@cluster0.6rz03sh.mongodb.net/Attendance';
-// mongodb+srv://AmanAgrahari_aa:<password>@cluster0.6rz03sh.mongodb.net/Attendance
-// const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 const Connection = ()=>{
      mongoose.set('strictQuery', true);
 
