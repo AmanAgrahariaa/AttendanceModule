@@ -286,10 +286,10 @@ app.post('/api/add-Admin', async (req, res) => {
 
 
 // Start the server
-if(port){
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
-}
 
-module.exports = app;
+
+// module.exports = app;
