@@ -12,6 +12,11 @@ const AdminHeader = () => {
     const [entriesToShow, setEntriesToShow] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [selectedAdminIdToDelete, setSelectedAdminIdToDelete] = useState('');
+    const [isEditButtonModalOpen, setIsEditButtonModalOpen] = useState(false);
+    const [selectedAdminIdToEdit, setSelectedAdminIdToEdit] = useState('');
+    const [formDataInEditModel, setFormDataInEditModel] = useState([]);
 
 
     const initialState = {
@@ -109,7 +114,7 @@ const AdminHeader = () => {
     };
 
 
-// model submit for add
+    // model submit for add
     async function handleSubmit(event) {
         event.preventDefault();
         try {
@@ -151,7 +156,8 @@ const AdminHeader = () => {
             setFilteredEntries(AttendanceData);
         } else {
             const filteredData = AttendanceData.filter((admin) =>
-                admin.name.toLowerCase().includes(searchQuery.toLowerCase())
+                admin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                admin.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredEntries(filteredData);
         }
@@ -175,6 +181,71 @@ const AdminHeader = () => {
 
 
 
+
+
+    // delete model
+    const handleConfirmationModalToggle = () => {
+        setIsConfirmationModalOpen(!isConfirmationModalOpen);
+    };
+
+    // edit button model
+    const handleEditButtonModalToggle = () => {
+        setIsEditButtonModalOpen(!isEditButtonModalOpen);
+    };
+
+    const handleDelete = async () => {
+        try {
+            // Send DELETE request to delete admin from the database
+            await fetch(`/api/admins/${selectedAdminIdToDelete}`, {
+                method: 'DELETE'
+            });
+
+            // Refresh admin data
+            fetchData();
+        } catch (error) {
+            console.log('Error deleting admin:', error);
+        }
+
+        // Close the confirmation modal
+        handleConfirmationModalToggle();
+    };
+
+    const handleEdit = async (event) => {
+        event.preventDefault()
+        try {
+            // Send edit / update request to update admin from the database
+            await fetch(`/api/admins/${selectedAdminIdToEdit}`, {
+                method: 'PUT'
+            });
+
+            // Refresh admin data
+            fetchData();
+        } catch (error) {
+            console.log('Error updating admin:', error);
+        }
+
+        // Close the confirmation modal
+        handleEditButtonModalToggle();
+    };
+
+    const handleConfirmation = (adminId) => {
+        setSelectedAdminIdToDelete(adminId);
+        handleConfirmationModalToggle();
+    };
+
+    const handleEditButton = (adminId) => {
+        setSelectedAdminIdToEdit(adminId);
+        const selectedAdminData = displayedEntries.find((admin) => admin._id === adminId);
+        setFormDataInEditModel(selectedAdminData);
+        handleEditButtonModalToggle();
+    };
+
+
+    const handleInputChangeInEditModel = (e) => {
+        setFormDataInEditModel({ ...formDataInEditModel, [e.target.name]: e.target.value });
+    };
+
+
     return (
         <>
             {/* <Navbar/> */}
@@ -195,15 +266,6 @@ const AdminHeader = () => {
                                 <Button variant="primary" onClick={handleModalToggle}>Add</Button>
                             </div>
                         </div>
-
-
-
-
-
-
-
-
-
 
                         {/* Modal code goes here */}
                         <Modal show={showModal} onHide={handleModalToggle}>
@@ -235,18 +297,20 @@ const AdminHeader = () => {
                                         <div className="row">
                                             <div className="col-6">
                                                 <div className="form-check">
-                                                    <input type="radio" className="form-check-input" id="Admin1" name="adminType" value="Admin1" onChange={handleInputChange} />
+                                                    <input type="radio" className="form-check-input" id="Admin1" name="adminType" value="Admin1" onChange={handleInputChange} style={{ appearance: "auto", width: "1.2em", height: "1.2em", backgroundColor: "#6f42c1" }}/>
                                                     <label className="form-check-label" htmlFor="Admin1">Admin1</label>
                                                 </div>
                                             </div>
                                             <div className="col-6">
                                                 <div className="form-check">
-                                                    <input type="radio" className="form-check-input" id="Admin2" name="adminType" value="Admin2" onChange={handleInputChange} />
+                                                    <input type="radio" className="form-check-input" id="Admin2" name="adminType" value="Admin2" onChange={handleInputChange} style={{ appearance: "auto", width: "1.2em", height: "1.2em", backgroundColor: "#6f42c1" }}/>
                                                     <label className="form-check-label" htmlFor="Admin2">Admin2</label>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    
 
                                     <div className="form-group">
                                         <label htmlFor="position">Position</label>
@@ -313,14 +377,9 @@ const AdminHeader = () => {
                                     </Modal.Footer>
                                 </form>
                             </Modal.Body>
-
                         </Modal>
+
                     </div>
-
-
-
-
-
 
 
                     {/* <Admin_Navbar/>  */}
@@ -379,12 +438,12 @@ const AdminHeader = () => {
                                     <th>Registration No</th>
                                     <th>Position</th>
                                     <th>AdminType</th>
-                                    <th>Delete</th>
                                     <th>Edit</th>
+                                    <th>Delete</th>
+
                                 </tr>
                             </thead>
                             <tbody id="tbody">
-
                                 {displayedEntries.map((student, index) => (
                                     <tr key={index}>
                                         <td>{indexOfFirstEntry + index + 1}</td>
@@ -393,16 +452,150 @@ const AdminHeader = () => {
                                         <td>{student.position}</td>
                                         <td>{student.adminType}</td>
                                         <td>
-                                            <TrashFill size={24} style={{ color: 'red' }} />
+                                            <PencilFill size={24} style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEditButton(student._id)} />
+                                            {/* <PencilFill size={24} style={{ color: 'blue', cursor: 'pointer' }} onClick={handleEdit} /> */}
                                         </td>
                                         <td>
-                                            <PencilFill size={24} style={{ color: 'blue' }} />
+                                            <TrashFill size={24} style={{ color: 'red' }} onClick={() => handleConfirmation(student._id)} />
+                                            {/* <TrashFill size={24} style={{ color: 'red', cursor: 'pointer' }} onClick={handleDelete} /> */}
                                         </td>
+
                                     </tr>
                                 ))}
 
                             </tbody>
                         </table>
+
+                        {/* Confirmation Modal */}
+                        <Modal show={isConfirmationModalOpen} onHide={handleConfirmationModalToggle}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Delete Admin</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                Are you sure you want to delete this admin?
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="secondary" onClick={handleConfirmationModalToggle}>
+                                    Cancel
+                                </Button>
+                                <Button variant="danger" onClick={handleDelete}>
+                                    Delete
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
+
+
+
+                        {/* Edit Modal */}
+                        <Modal show={isEditButtonModalOpen} onHide={handleEditButtonModalToggle}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Edit Admin</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                {/* Modal content goes here */}
+                                <form onSubmit={handleEdit}>
+                                    {/* Form fields */}
+                                    <div className="form-group">
+                                        <label htmlFor="name">Admin Name</label>
+                                        <input type="text" className="form-control" id="name" name="name" value={formDataInEditModel.name} onChange={handleInputChangeInEditModel} />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="registrationNumber">Registration Number</label>
+                                        <input type="text" className="form-control" id="registrationNumber" name="registrationNumber" value={formDataInEditModel.registrationNumber} onChange={handleInputChangeInEditModel} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="email">Email</label>
+                                        <input type="text" className="form-control" id="email" name="email" value={formDataInEditModel.email} onChange={handleInputChangeInEditModel} />
+                                    </div>
+
+
+                                    <div className="form-group mb-2 mt-2">
+                                        <label >AdminType</label>
+                                        <div className="row">
+                                            <div className="col-6">
+                                                <div className="form-check">
+                                                    <input type="radio" className="form-check-input" id="Admin1" name="adminType" value="Admin1" checked={formDataInEditModel.adminType === "Admin1"} onChange={handleInputChangeInEditModel} style={{ appearance: "auto", width: "1.2em", height: "1.2em", backgroundColor: "#6f42c1" }}/>
+                                                    <label className="form-check-label" htmlFor="Admin1">Admin1</label>
+                                                </div>
+                                            </div>
+                                            <div className="col-6">
+                                                <div className="form-check">
+                                                    <input type="radio" className="form-check-input" id="Admin2" name="adminType" value="Admin2" checked={formDataInEditModel.adminType === "Admin2"} onChange={handleInputChangeInEditModel} style={{ appearance: "auto", width: "1.2em", height: "1.2em", backgroundColor: "#6f42c1" }}/>
+                                                    <label className="form-check-label" htmlFor="Admin2">Admin2</label>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="position">Position</label>
+                                        <select className="form-control" id="position" onChange={handleInputChangeInEditModel} name="position" value={formDataInEditModel.position} >
+                                            <option value="">Select Position</option>
+                                            <option value="president">President</option>
+                                            <option value="vice-president">Vice President</option>
+                                            <option value="em-head">EM Head</option>
+                                            <option value="creative-head">Creative Head</option>
+                                            <option value="content-head">Content Head</option>
+                                            <option value="pr-head">PR Head</option>
+                                            <option value="strategic-planning-head">strategic & Planning Head</option>
+                                            <option value="media-head">Media Head</option>
+                                            <option value="web-head">Web Head</option>
+                                            <option value="pg-representative">PG Representative</option>
+                                            <option value="general-secratary">General Secratary</option>
+                                            <option value="joint-secratary">Join Secratory</option>
+                                            {/* Add more options as needed */}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="course">Course</label>
+                                        <select className="form-control" id="course" name="course" value={formDataInEditModel.course} onChange={handleInputChangeInEditModel}>
+                                            <option value="">Select Course</option>
+                                            <option value="B-tech">B-Tech</option>
+                                            <option value="MCA">MCA</option>
+                                            <option value="M.Sc.">M.Sc.</option>
+                                            <option value="M-Tech">M-Tech</option>
+                                            <option value="Ph.D.">Ph.D.</option>
+                                            {/* Add more options as needed */}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="branch">Branch</label>
+                                        <select className="form-control" id="branch" name="branch" value={formDataInEditModel.branch} onChange={handleInputChangeInEditModel}>
+                                            <option value="">Select Branch</option>
+                                            <option value="MCA">MCA</option>
+                                            <option value="CSE">CSE</option>
+                                            <option value="ECE">ECE</option>
+                                            <option value="EEE">EEE</option>
+                                            <option value="Civil">Civil</option>
+                                            <option value="Mathematics">Mathematics</option>
+                                            {/* Add more options as needed */}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="year">Year</label>
+                                        <select className="form-control" id="year" name="year" value={formDataInEditModel.year} onChange={handleInputChangeInEditModel}>
+                                            <option value="">Select Year</option>
+                                            <option value="1st">1st</option>
+                                            <option value="2nd">2nd</option>
+                                            <option value="3rd">3rd</option>
+                                            <option value="4th">4th</option>
+                                            {/* Add more options as needed */}
+                                        </select>
+                                    </div>
+
+                                    <Modal.Footer>
+                                        <Button variant="secondary" onClick={handleEditButtonModalToggle}>Cancel</Button>
+                                        <Button variant="primary" type='submit'>Edit</Button>
+                                    </Modal.Footer>
+                                </form>
+                            </Modal.Body>
+                        </Modal>
+
 
                         <div className="panel-footer">
                             <div className="container">

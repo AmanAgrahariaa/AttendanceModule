@@ -14,6 +14,12 @@ const AdminHeader = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [entriesToShow, setEntriesToShow] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [selectedAdminIdToDelete, setSelectedAdminIdToDelete] = useState('');
+    const [isEditButtonModalOpen, setIsEditButtonModalOpen] = useState(false);
+    const [selectedEventIdToEdit, setSelectedEventIdToEdit] = useState('');
+    const [formDataInEditModel, setFormDataInEditModel] = useState({});
+
 
     const initialState = {
         name: '',
@@ -176,6 +182,72 @@ async function handleSubmit(event) {
 
 
 
+    // delete button
+     // delete model
+     const handleConfirmationModalToggle = () => {
+        setIsConfirmationModalOpen(!isConfirmationModalOpen);
+    };
+
+    const handleDelete = async () => {
+        try {
+            // Send DELETE request to delete admin from the database
+            await fetch(`/api/admins/${selectedAdminIdToDelete}`, {
+                method: 'DELETE'
+            });
+
+            // Refresh delete data
+            fetchData();
+        } catch (error) {
+            console.log('Error deleting event:', error);
+        }
+
+        // Close the confirmation modal
+        handleConfirmationModalToggle();
+    };
+
+    const handleConfirmation = (eventId) => {
+        setSelectedAdminIdToDelete(eventId);
+        handleConfirmationModalToggle();
+    };
+
+
+
+
+    // edit button model
+    const handleEditButtonModalToggle = () => {
+        setIsEditButtonModalOpen(!isEditButtonModalOpen);
+    };
+
+    const handleEdit = async (event) => {
+        event.preventDefault()
+        try {
+            // Send edit / update request to update admin from the database
+            await fetch(`/api/admins/${selectedEventIdToEdit}`, {
+                method: 'PUT'
+            });
+
+            // Refresh event data
+            fetchData();
+        } catch (error) {
+            console.log('Error updating event:', error);
+        }
+
+        // Close the confirmation modal
+        handleEditButtonModalToggle();
+    };
+
+    const handleEditButton = (eventId) => {
+        setSelectedEventIdToEdit(eventId);
+        const selectedEventData = displayedEntries.find((event) => event._id === eventId);
+        console.log(selectedEventData);
+        setFormDataInEditModel(selectedEventData);
+        handleEditButtonModalToggle();
+    };
+
+
+    const handleInputChangeInEditModel = (e) => {
+        setFormDataInEditModel({ ...formDataInEditModel, [e.target.name]: e.target.value });
+    };
 
     return (
         <>
@@ -261,8 +333,6 @@ async function handleSubmit(event) {
                                     </select>
                                     <label className="mb-0 ml-2">entries</label>
                                 </div>
-
-
                             </div>
                         </div>
 
@@ -296,8 +366,8 @@ async function handleSubmit(event) {
                                     <th>Event Name</th>
                                     <th>Start Date</th>
                                     <th>End Date</th>
-                                    <th>Delete</th>
                                     <th>Edit</th>
+                                    <th>Delete</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody">
@@ -307,16 +377,71 @@ async function handleSubmit(event) {
                                         <td>{student.eventName}</td>
                                         <td>{student.startDate}</td>
                                         <td>{student.endDate}</td>
+                                        
                                         <td>
-                                            <TrashFill size={24} style={{ color: 'red' }} />
+                                            {/* <PencilFill size={24} style={{ color: 'blue' }} /> */}
+                                            <PencilFill size={24} style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEditButton(student._id)} />
                                         </td>
                                         <td>
-                                            <PencilFill size={24} style={{ color: 'blue' }} />
+                                            {/* <TrashFill size={24} style={{ color: 'red' }} /> */}
+                                            <TrashFill size={24} style={{ color: 'red' }} onClick={() => handleConfirmation(student._id)} />
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+
+                        {/* Confirmation Modal */}
+                        <Modal show={isConfirmationModalOpen} onHide={handleConfirmationModalToggle}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Delete Admin</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                Are you sure you want to delete this admin?
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="secondary" onClick={handleConfirmationModalToggle}>
+                                    Cancel
+                                </Button>
+                                <Button variant="danger" onClick={handleDelete}>
+                                    Delete
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
+
+
+                         {/* Edit Modal */}
+                         <Modal show={isEditButtonModalOpen} onHide={handleEditButtonModalToggle}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Edit Admin</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                {/* Modal content goes here */}
+                                <form onSubmit={handleEdit}>
+                                    {/* Form fields */}
+                                    <div className="form-group">
+                                        <label htmlFor="name">Event Name</label>
+                                        <input type="text" className="form-control" id="name" name="name" value={formDataInEditModel.eventName} onChange={handleInputChangeInEditModel}/>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="startDate">Event Start Date</label>
+                                        <input type="date" id="startDate" class="form-control" name="startDate" value={formDataInEditModel.startDate} onChange={handleInputChangeInEditModel}/>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="endDate">Event End Date</label>
+                                        <input type="date" id="endDate" class="form-control" name="endDate" value={formDataInEditModel.endDate} onChange={handleInputChangeInEditModel}/>
+                                    </div>
+                              
+                                    <Modal.Footer>
+                                        <Button variant="secondary" onClick={handleEditButtonModalToggle}>Cancel</Button>
+                                        <Button variant="primary" type='submit'>Edit</Button>
+                                    </Modal.Footer>
+                                </form>
+                            </Modal.Body>
+                        </Modal>
+
 
                         <div className="panel-footer">
                             <div className="container">

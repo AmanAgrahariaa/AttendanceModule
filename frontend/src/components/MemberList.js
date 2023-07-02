@@ -15,6 +15,12 @@ const AdminHeader = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [branchData, setBranchData] = useState('');
     const [yearData, setYearData] = useState('');
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [selectedAdminIdToDelete, setSelectedAdminIdToDelete] = useState('');
+    const [isEditButtonModalOpen, setIsEditButtonModalOpen] = useState(false);
+    const [selectedMemberToEdit, setSelectedMemberIdToEdit] = useState('');
+    const [formDataInEditModel, setFormDataInEditModel] = useState([]);
+
 
     const initialState = {
         name: '',
@@ -99,7 +105,8 @@ const AdminHeader = () => {
             setFinalEntries(filteredEntries);
         } else {
             const filteredData = filteredEntries.filter((member) =>
-                member.name.toLowerCase().includes(searchQuery.toLowerCase())
+                member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                member.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFinalEntries(filteredData);
         }
@@ -236,6 +243,74 @@ const AdminHeader = () => {
         const timestamp = Date.now();
         XLSX.writeFile(workbook, `member_report_${timestamp}.xlsx`);
 
+    };
+
+
+
+
+
+    // delete model
+    const handleConfirmationModalToggle = () => {
+        setIsConfirmationModalOpen(!isConfirmationModalOpen);
+    };
+
+    const handleDelete = async () => {
+        try {
+            // Send DELETE request to delete member from the database
+            await fetch(`/api/admins/${selectedAdminIdToDelete}`, {
+                method: 'DELETE'
+            });
+
+            // Refresh member data
+            fetchData();
+        } catch (error) {
+            console.log('Error deleting member:', error);
+        }
+
+        // Close the confirmation modal
+        handleConfirmationModalToggle();
+    };
+
+    const handleConfirmation = (memberId) => {
+        setSelectedAdminIdToDelete(memberId);
+        handleConfirmationModalToggle();
+    };
+
+
+
+     // edit button model
+     const handleEditButtonModalToggle = () => {
+        setIsEditButtonModalOpen(!isEditButtonModalOpen);
+    };
+
+    const handleEdit = async (event) => {
+        event.preventDefault()
+        try {
+            // Send edit / update request to update member from the database
+            await fetch(`/api/admins/${selectedMemberToEdit}`, {
+                method: 'PUT'
+            });
+
+            // Refresh member data
+            fetchData();
+        } catch (error) {
+            console.log('Error updating member:', error);
+        }
+
+        // Close the confirmation modal
+        handleEditButtonModalToggle();
+    };
+
+
+    const handleEditButton = (memberId) => {
+        setSelectedMemberIdToEdit(memberId);
+        const selectedMemberData = displayedEntries.find((member) => member._id === memberId);
+        setFormDataInEditModel(selectedMemberData);
+        handleEditButtonModalToggle();
+    };
+
+    const handleInputChangeInEditModel = (e) => {
+        setFormDataInEditModel({ ...formDataInEditModel, [e.target.name]: e.target.value });
     };
 
 
@@ -461,8 +536,9 @@ const AdminHeader = () => {
                                     <th>Student Name</th>
                                     <th>Branch</th>
                                     <th>Batch(Year)</th>
-                                    <th>Delete</th>
                                     <th>Edit</th>
+                                    <th>Delete</th>
+
                                 </tr>
                             </thead>
                             <tbody id="tbody">
@@ -475,12 +551,16 @@ const AdminHeader = () => {
 
                                             <td>{student.branch}</td>
                                             <td>{student.year}</td>
+
                                             <td>
-                                                <TrashFill size={24} style={{ color: 'red' }} />
+                                                <PencilFill size={24} style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEditButton(student._id)} />
+                                                {/* <PencilFill size={24} style={{ color: 'blue', cursor: 'pointer' }} onClick={handleEdit} /> */}
                                             </td>
                                             <td>
-                                                <PencilFill size={24} style={{ color: 'blue' }} />
+                                                <TrashFill size={24} style={{ color: 'red' }} onClick={() => handleConfirmation(student._id)} />
+                                                {/* <TrashFill size={24} style={{ color: 'red', cursor: 'pointer' }} onClick={handleDelete} /> */}
                                             </td>
+
                                         </tr>
                                     ))
                                 ) : (
@@ -492,6 +572,91 @@ const AdminHeader = () => {
                             </tbody>
                         </table>
 
+                        {/* Confirmation Modal */}
+                        <Modal show={isConfirmationModalOpen} onHide={handleConfirmationModalToggle}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Delete Member</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                Are you sure you want to delete this member?
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="secondary" onClick={handleConfirmationModalToggle}>
+                                    Cancel
+                                </Button>
+                                <Button variant="danger" onClick={handleDelete}>
+                                    Delete
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
+
+
+                         {/* Edit Modal */}
+                         <Modal show={isEditButtonModalOpen} onHide={handleEditButtonModalToggle}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Edit Member</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                {/* Modal content goes here */}
+                                <form onSubmit={handleEdit}>
+                                    {/* Form fields */}
+                                    <div className="form-group">
+                                        <label htmlFor="name">Student Name</label>
+                                        <input type="text" className="form-control" id="name" name="name" value={formDataInEditModel.name} onChange={handleInputChangeInEditModel} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="registrationNumber">Registration Number</label>
+                                        <input type="text" className="form-control" id="registrationNumber" name="registrationNumber" value={formDataInEditModel.registrationNumber} onChange={handleInputChangeInEditModel} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="email">Email </label>
+                                        <input type="text" className="form-control" id="email" name="email" value={formDataInEditModel.email} onChange={handleInputChangeInEditModel} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="course">Course</label>
+                                        <select className="form-control" id="course" name="course" value={formDataInEditModel.course} onChange={handleInputChangeInEditModel}>
+                                            <option value="">Select Course</option>
+                                            <option value="B-tech">B-Tech</option>
+                                            <option value="MCA">MCA</option>
+                                            <option value="M.Sc.">M.Sc.</option>
+                                            <option value="M-Tech">M-Tech</option>
+                                            <option value="Ph.D.">Ph.D.</option>
+                                            {/* Add more options as needed */}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="branch">Branch</label>
+                                        <select className="form-control" id="branch" name="branch" value={formDataInEditModel.branch} onChange={handleInputChangeInEditModel}>
+                                            <option value="">Select Branch</option>
+                                            <option value="MCA">MCA</option>
+                                            <option value="CSE">CSE</option>
+                                            <option value="ECE">ECE</option>
+                                            <option value="EEE">EEE</option>
+                                            <option value="Civil">Civil</option>
+                                            <option value="Mathematics">Mathematics</option>
+                                            {/* Add more options as needed */}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="year">Year</label>
+                                        <select className="form-control" id="year" name="year" value={formDataInEditModel.year} onChange={handleInputChangeInEditModel}>
+                                            <option value="">Select Year</option>
+                                            <option value="1st">1st</option>
+                                            <option value="2nd">2nd</option>
+                                            <option value="3rd">3rd</option>
+                                            <option value="4th">4th</option>
+                                            {/* Add more options as needed */}
+                                        </select>
+                                    </div>
+                                    <Modal.Footer>
+                                        <Button variant="secondary" onClick={handleEditButtonModalToggle}>Cancel</Button>
+                                        <Button variant="primary" type='submit'>Edit</Button>
+                                    </Modal.Footer>
+                                </form>
+                            </Modal.Body>
+                        </Modal>
 
 
                         <div className="panel-footer">

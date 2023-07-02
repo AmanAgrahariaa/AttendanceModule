@@ -113,7 +113,8 @@ app.post('/login', async(req, res) => {
 
 
 app.post('/api/addEvent', async(req, res) => {
-  const {name, startDate, endDate} = req.body;
+  let {name, startDate, endDate} = req.body;
+  
   let eventName = name;
   try{
     let event = new Event({eventName, startDate, endDate});
