@@ -15,6 +15,14 @@ const Admin = require('./models/admin')
 // app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 app.use(cors());
+app.use(cors(
+  {
+    origin: ["https://deploy-mern-1whq.vercel.app"],
+    methods: ["POST","GET"],
+    Credentials: true
+  }
+));
+
 app.use(bodyParser.json());
 
 // Port Number
